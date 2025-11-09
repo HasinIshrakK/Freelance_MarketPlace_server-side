@@ -28,10 +28,19 @@ app.get('/', (req, res) => {
 async function run() {
     try {
         await client.connect();
+
+        const db = client.db('freelanceDb');
+        const jobsCollection = db.collection('jobs');
+
+        app.get('/jobs', async(req,res) =>{
+            const jobs = await jobsCollection.find().toArray();
+            res.send(jobs)
+        })
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged!!!");
     }
-    finally{
+    finally {
 
     }
 }
