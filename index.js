@@ -79,6 +79,23 @@ async function run() {
             }
         });
 
+        app.patch('/jobs/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedJob = req.body;
+            const query = { _id: new ObjectId(id) }
+            const update = {
+                $set: {
+                    title: updatedJob.title,
+                    category: updatedJob.category,
+                    summary: updatedJob.summary,
+                    coverImage: updatedJob.coverImage,
+                }
+            }
+
+            const result = await jobsCollection.updateOne(query, update)
+            res.send(result)
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged!!!");
