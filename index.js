@@ -41,7 +41,25 @@ async function run() {
             const newJob = req.body;
             const result = await jobsCollection.insertOne(newJob);
             res.send(result);
-        })
+        });
+
+        app.get('/my-jobs', async (req, res) => {
+
+            try {
+                console.log(req.query)
+                const email = req.query.email;
+                const query = {}
+                if (email) {
+                    query.userEmail = email;
+                }
+
+                const cursor = jobsCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ message: "Server Error" });
+            }
+        });
 
         app.get('/jobs/:id', async (req, res) => {
             try {
