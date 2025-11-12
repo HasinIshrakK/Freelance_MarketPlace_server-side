@@ -31,11 +31,12 @@ async function run() {
 
         const db = client.db('freelanceDb');
         const jobsCollection = db.collection('jobs');
+        const addedJobsCollection = db.collection('addedJobs');
 
         app.get('/jobs', async (req, res) => {
             const jobs = await jobsCollection.find().toArray();
             res.send(jobs)
-        })
+        });
 
         app.post('/jobs', async (req, res) => {
             const newJob = req.body;
@@ -46,7 +47,6 @@ async function run() {
         app.get('/my-jobs', async (req, res) => {
 
             try {
-                console.log(req.query)
                 const email = req.query.email;
                 const query = {}
                 if (email) {
@@ -90,16 +90,47 @@ async function run() {
                     summary: updatedJob.summary,
                     coverImage: updatedJob.coverImage,
                 }
-            }
+            };
 
-            const result = await jobsCollection.updateOne(query, update)
-            res.send(result)
+            const result = await jobsCollection.updateOne(query, update);
+            res.send(result);
         });
 
         app.delete('/jobs/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await jobsCollection.deleteOne(query);
+            res.send(result);
+        });
+
+
+        app.post('/accepted-jobs', async (req, res) => {
+            const newJob = req.body;
+            const result = await addedJobsCollection.insertOne(newJob);
+            res.send(result);
+        });
+
+        app.get('/my-accepted-jobs', async (req, res) => {
+
+            try {
+                const email = req.query.email;
+                const query = {}
+                if (email) {
+                    query.email = email;
+                }
+
+                const cursor = addedJobsCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ message: "Server Error" });
+            }
+        });
+
+        app.delete('/accepted-jobs/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await addedJobsCollection.deleteOne(query);
             res.send(result);
         });
 
