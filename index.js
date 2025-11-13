@@ -5,10 +5,34 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const admin = require("firebase-admin");
+
+const serviceAccount = require("./freelance-marketplace-demo-firebase-admin-key.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
 //middlewares
 
 app.use(cors());
 app.use(express.json());
+
+const verifyFirebaseToken = async (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ message: 'Unauthorized access' });
+    };
+    const token = authorization.split(' ')[1];
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        console.log('token', decoded);
+        req.token_email = decoded.email;
+        next();
+    } catch (error) {
+        return res.status(401).send({ message: 'Unauthorized access' });
+    }
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rwnir9j.mongodb.net/?appName=Cluster0`;
@@ -38,19 +62,22 @@ async function run() {
             res.send(jobs)
         });
 
-        app.post('/jobs', async (req, res) => {
+        app.post('/jobs', verifyFirebaseToken, async (req, res) => {
             const newJob = req.body;
             const result = await jobsCollection.insertOne(newJob);
             res.send(result);
         });
 
-        app.get('/my-jobs', async (req, res) => {
+        app.get('/my-jobs', verifyFirebaseToken, async (req, res) => {
 
             try {
                 const email = req.query.email;
                 const query = {}
                 if (email) {
                     query.userEmail = email;
+                    if (email !== req.token_email) {
+                        return res.status(403).send({ message: 'Forbidden access' });
+                    }
                 }
 
                 const cursor = jobsCollection.find(query);
@@ -61,7 +88,7 @@ async function run() {
             }
         });
 
-        app.get('/jobs/:id', async (req, res) => {
+        app.get('/jobs/:id', verifyFirebaseToken, async (req, res) => {
             try {
                 const id = req.params.id;
 
@@ -79,7 +106,7 @@ async function run() {
             }
         });
 
-        app.patch('/jobs/:id', async (req, res) => {
+        app.patch('/jobs/:id', verifyFirebaseToken, async (req, res) => {
             const id = req.params.id;
             const updatedJob = req.body;
             const query = { _id: new ObjectId(id) }
@@ -96,7 +123,7 @@ async function run() {
             res.send(result);
         });
 
-        app.delete('/jobs/:id', async (req, res) => {
+        app.delete('/jobs/:id', verifyFirebaseToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await jobsCollection.deleteOne(query);
@@ -104,19 +131,22 @@ async function run() {
         });
 
 
-        app.post('/accepted-jobs', async (req, res) => {
+        app.post('/accepted-jobs', verifyFirebaseToken, async (req, res) => {
             const newJob = req.body;
             const result = await addedJobsCollection.insertOne(newJob);
             res.send(result);
         });
 
-        app.get('/my-accepted-jobs', async (req, res) => {
+        app.get('/my-accepted-jobs', verifyFirebaseToken, async (req, res) => {
 
             try {
                 const email = req.query.email;
                 const query = {}
                 if (email) {
                     query.email = email;
+                    if (email !== req.token_email) {
+                        return res.status(403).send({ message: 'Forbidden access' });
+                    }
                 }
 
                 const cursor = addedJobsCollection.find(query);
@@ -127,7 +157,7 @@ async function run() {
             }
         });
 
-        app.delete('/accepted-jobs/:id', async (req, res) => {
+        app.delete('/accepted-jobs/:id', verifyFirebaseToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await addedJobsCollection.deleteOne(query);
