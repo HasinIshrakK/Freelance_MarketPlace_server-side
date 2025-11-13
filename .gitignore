@@ -1,3 +1,4 @@
 node_modules
 .env
 freelance-marketplace-demo-firebase-admin-key.json
+.vercel
