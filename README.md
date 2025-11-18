@@ -14,9 +14,9 @@ Node.js
 
 Express.js
 
-MongoDB / Mongoose
+MongoDB
 
-Firebase Admin SDK (JWT verification)
+Firebase Admin SDK
 
 ## ✨ Key Features
 
