@@ -4,6 +4,52 @@ Node.js + Express backend for Freelance Marketplace. Handles jobs/tasks CRUD ope
 
 ---
 
+## 📌 Project Overview
+
+A secure Express.js backend API for freelance marketplace operations including authentication, job posting, applications, and user role management.
+
+## 🛠️ Main Technologies
+
+Node.js
+
+Express.js
+
+MongoDB / Mongoose
+
+Firebase Admin SDK (JWT verification)
+
+## ✨ Key Features
+
+Firebase token verification middleware
+
+CRUD operations for jobs
+
+User role & permissions handling
+
+Protected routes for authenticated users
+
+MongoDB database operations
+
+Error handling & response standardization
+
+CORS-enabled API
+
+Environment variable protection
+
+## 📦 Dependencies
+
+express
+
+mongodb
+
+cors
+
+dotenv
+
+firebase-admin
+
+nodemon (dev)
+
 ## Installation
 
 ```bash
